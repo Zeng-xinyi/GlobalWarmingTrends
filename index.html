@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>2025 Surface Air Temperature (TaiESM1 ssp245)</title>
+    <link rel="stylesheet" href="styles/style.css" />
+    <script src="https://d3js.org/d3.v7.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+    <script type="module" src="scripts/temperature-map.js" defer></script>
+  </head>
+  <body>
+    <header class="page-header">
+      <h1>2025 Surface Air Temperature (TaiESM1 ssp245)</h1>
+      <p>Explore the details of regional temperature distribution and changes through the click-to-reveal mechanism.</p>
+      <div class="team-info">
+        <strong>Team:</strong> TerraScope |
+        <strong>Members:</strong> XinYi Zeng, ShuJia Chen, WeiYu Chen, Qi Zhang
+      </div>
+    </header>
+
+    <div class="slider-box">
+      <label for="time-slider">Current time:</label>
+      <span id="current-time-display">Loading...</span>
+      <input type="range" id="time-slider" min="0" max="0" value="0">
+    </div>
+
+    <main class="layout">
+      <section class="map-wrapper">
+        <div id="map"></div>
+      </section>
+      <aside class="info-panel">
+        <h2>Selected Countries/Regions</h2>
+        <ul id="selection-list" class="selection-list"></ul>
+      </aside>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,264 @@
+:root {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #1f2933;
+  background-color: #f8fafc;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-header,
+.page-footer {
+  padding: 1.5rem clamp(1.5rem, 4vw, 3rem);
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+}
+
+.page-header h1 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+}
+
+.page-header p {
+  margin: 0 0 0.75rem;
+  color: #64748b;
+}
+
+.team-info {
+  margin-bottom: 1rem;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.slider-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem clamp(1.5rem, 4vw, 3rem);
+  background: #f1f5f9;
+  margin: 0;
+}
+
+.slider-box label {
+  font-weight: 500;
+  color: #334155;
+}
+
+.slider-box #current-time-display {
+  font-family: 'Consolas', 'Monaco', monospace;
+  background: #f1f5f9;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #0f172a;
+}
+
+.slider-box input[type="range"] {
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+
+.slider-box input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #3b82f6;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.slider-box input[type="range"]::-webkit-slider-thumb:hover {
+  background: #2563eb;
+}
+
+.slider-box input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #3b82f6;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  padding: clamp(1.5rem, 4vw, 3rem);
+}
+
+.layout > * {
+  width: 90%;
+  max-width: 1600px;
+}
+
+.map-wrapper {
+  position: relative;
+}
+
+#map {
+  width: 100%;
+  max-width: none;
+  aspect-ratio: 2 / 1;
+  position: relative;
+  overflow: hidden;
+}
+
+#heatmap-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  background-color: #a8d8ea;
+}
+
+#overlay-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.info-panel {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  padding: 1.25rem 2rem;
+  position: static;
+}
+
+.info-panel h2 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+}
+
+.selection-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.selection-list__item {
+  border-left: 3px solid #2563eb;
+  padding-left: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
+}
+
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: rgba(15, 23, 42, 0.9);
+  color: #f8fafc;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.15);
+  opacity: 0;
+  transition: opacity 120ms ease;
+  z-index: 999;
+}
+
+.legend {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.legend text {
+  font-size: 0.75rem;
+  fill: #1f2937;
+}
+
+.legend line {
+  stroke: rgba(15, 23, 42, 0.25);
+}
+
+.country {
+  fill: #f5f5f5;
+  fill-opacity: 1;
+  stroke: none;
+  cursor: pointer;
+  transition: fill-opacity 200ms ease;
+}
+
+.country--hover {
+  fill-opacity: 0;
+}
+
+.country--revealed {
+  fill-opacity: 0;
+}
+
+.country-border {
+  fill: none;
+  stroke: #94a3b8;
+  stroke-width: 0.5px;
+  pointer-events: none;
+  transition: stroke 150ms ease, stroke-width 150ms ease;
+}
+
+.ocean-mask {
+  fill: #a8d8ea;
+  pointer-events: none;
+}
+
+.tooltip.is-visible {
+  opacity: 1;
+}
+
+@media (max-width: 960px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .info-panel {
+    position: static;
+    width: 100%;
+  }
+}
+
+#abstract,
+#discussion {
+  padding: 1rem 1rem;
+  margin: 2rem auto;
+  max-width: 1200px;
+}
+
+#abstract p,
+#discussion p {
+  line-height: 1.7;
+  text-align: justify;
+}

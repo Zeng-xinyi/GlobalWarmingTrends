@@ -18,10 +18,12 @@ const colorScale = d3.scaleSequential(d3.interpolateInferno)
 const revealedCountries = new Set();
 let tooltip, overlayLayer, heatmapSvg;
 
-
-let allTemperatureData = null; // { "2015-01-01": [240, 242...], ... }
-let screenCoords = [];         //  [{x:100, y:200}, ...]
+// --- 修改部分：数据变量 ---
+let allTemperatureData = null; // 存放温度字典: { "2015-01-01": [240, 242...], ... }
+let screenCoords = [];         // 存放预计算的屏幕坐标: [{x:100, y:200}, ...]
 let timePoints = [];
+// -----------------------
+
 
 
 async function init() {
@@ -59,7 +61,7 @@ async function loadTemperatureData() {
     const buffer = await response.arrayBuffer();
     const zip = await JSZip.loadAsync(buffer);
     
-    const jsonFile = zip.file("optimized_data.json");
+    const jsonFile = zip.file("temperature_data.json")
     
     if (!jsonFile) {
       throw new Error("Data file not found in zip");
@@ -68,15 +70,18 @@ async function loadTemperatureData() {
     const jsonString = await jsonFile.async("string");
     const parsedData = JSON.parse(jsonString);
     
-    //  "coords": [[lon, lat], ...]
+
     const rawCoords = parsedData.coords; 
     screenCoords = rawCoords.map(d => {
       const p = projection(d);
+
       return p ? { x: p[0], y: p[1] } : null;
     });
 
+
     allTemperatureData = parsedData.temperatures || parsedData.data;
     
+
     
     timePoints = Object.keys(allTemperatureData).sort();
     
@@ -105,6 +110,7 @@ function renderHeatmap(timeIndex) {
   document.getElementById('current-time-display').textContent = currentTime;
   
   const currentTemps = allTemperatureData[currentTime];
+  
 
   const renderData = [];
   for (let i = 0; i < screenCoords.length; i++) {
@@ -116,10 +122,10 @@ function renderHeatmap(timeIndex) {
           });
       }
   }
-
+  // -----------------------
   
   const circles = heatmapSvg.selectAll(".data-point")
-    .data(renderData); 
+    .data(renderData); // 移除key函数以提高速度
   
   circles.exit().remove();
   
@@ -130,8 +136,8 @@ function renderHeatmap(timeIndex) {
     .attr("r", 3)
     .attr("stroke", "none")
     .merge(circles)
-    .attr("cx", d => d.x) 
-    .attr("cy", d => d.y) 
+    .attr("cx", d => d.x) // 直接使用预计算的X
+    .attr("cy", d => d.y) // 直接使用预计算的Y
     .attr("fill", d => colorScale(d.val));
 }
 

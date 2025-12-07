@@ -239,14 +239,21 @@ function setupControls() {
 function togglePlay() {
   const btn = document.getElementById('play-btn');
   const slider = document.getElementById('time-slider');
-  const btnText = btn.querySelector('.text') || btn; // Compatible with icon structure
+  
+  // Elements for UI update
+  const iconSpan = btn.querySelector('.icon');
+  const textSpan = btn.querySelector('.text');
 
   if (isPlaying) {
+    // === PAUSE LOGIC ===
     clearInterval(animationInterval);
-    if (btnText) btnText.textContent = "Play";
+    if (iconSpan) iconSpan.textContent = "▶";
+    if (textSpan) textSpan.textContent = "Play";
     isPlaying = false;
   } else {
-    if (btnText) btnText.textContent = "Pause";
+    // === PLAY LOGIC ===
+    if (iconSpan) iconSpan.textContent = "⏸";
+    if (textSpan) textSpan.textContent = "Pause";
     isPlaying = true;
     
     animationInterval = setInterval(() => {
@@ -269,11 +276,19 @@ function toggleAnomalyMode(enabled) {
   // Refresh all existing charts in the sidebar to match new mode
   const listItems = document.querySelectorAll('.selection-list__item');
   listItems.forEach(item => {
-    // If we stored the feature data, we can redraw
     if (item.featureData) {
       const container = item.querySelector('.chart-container');
+      const statsContainer = item.querySelector('.stats-box'); // Changed to match class in Template
+      
       container.innerHTML = ''; // Clear old chart
+      
       const trendData = calculateCountryTrend(item.featureData);
+      
+      // Refresh stats
+      if (statsContainer) {
+        updateCountryStats(statsContainer, trendData);
+      }
+
       drawDetailedChart(container, trendData, item.dataset.countryId);
     }
   });
@@ -383,6 +398,8 @@ function setupLegend() {
 function setupZoom(container) {
   zoomBehavior = d3.zoom() 
     .scaleExtent([1, 8])
+    // Limit translation so map doesn't float away (fix for whitespace)
+    .translateExtent([[0, 0], [MAP_WIDTH, MAP_HEIGHT]]) 
     .on("zoom", zoomed);
 
   container.call(zoomBehavior);
@@ -479,42 +496,43 @@ function handleClick(event, feature) {
 
 function addToSelectionList(id, name, feature) {
   const list = document.getElementById('selection-list');
-  const item = document.createElement('li');
-  item.className = 'selection-list__item';
+  const template = document.getElementById('sidebar-item-template');
+  
+  // Clone the template content
+  const clone = template.content.cloneNode(true);
+  const item = clone.querySelector('li');
+  
+  // Set data attributes
   item.dataset.countryId = id;
-  // Store feature data on the DOM element for mode switching
   item.featureData = feature; 
   
-  item.style.flexDirection = "column";
-  item.style.alignItems = "stretch";
+  // 1. Set Country Name
+  const nameEl = item.querySelector('.country-name');
+  nameEl.textContent = name;
   
-  // Header
-  const header = document.createElement('div');
-  header.style.display = "flex";
-  header.style.justifyContent = "space-between";
-  header.style.alignItems = "center";
-  header.innerHTML = `
-    <span style="font-weight:600; font-size:0.9rem;">${name}</span>
-    <button onclick="removeCountry('${id}')" style="background:none;border:none;cursor:pointer;color:#ef4444;">✕</button>
-  `;
-  item.appendChild(header);
+  // 2. Setup Remove Button
+  const removeBtn = item.querySelector('.remove-btn');
+  removeBtn.onclick = () => removeCountry(id);
 
-  // Chart Container
-  const chartContainer = document.createElement('div');
-  chartContainer.className = 'chart-container'; 
-  chartContainer.style.height = "100px"; 
-  chartContainer.style.width = "100%";
-  chartContainer.style.marginTop = "5px";
-  chartContainer.innerHTML = '<span style="font-size:0.7rem;color:#999;">Calculating...</span>';
-  item.appendChild(chartContainer);
+  // 3. Get Containers
+  const statsContainer = item.querySelector('.stats-box');
+  const chartContainer = item.querySelector('.chart-container');
   
+  // Append to DOM
   list.appendChild(item);
 
   // Calculate & Draw
   setTimeout(() => {
     const trendData = calculateCountryTrend(feature);
+    
+    // Clear loading text
+    chartContainer.innerHTML = ''; 
+
     if (trendData && trendData.length > 0) {
-        chartContainer.innerHTML = ''; 
+        // Update Stats
+        updateCountryStats(statsContainer, trendData);
+
+        // Draw Chart
         drawDetailedChart(chartContainer, trendData, id);
         
         // Sync immediately
@@ -522,6 +540,7 @@ function addToSelectionList(id, name, feature) {
         updateChartsSync(+slider.value); 
     } else {
         chartContainer.innerHTML = '<span style="font-size:0.7rem;color:#ef4444;">No data</span>';
+        statsContainer.style.display = 'none';
     }
   }, 50);
 }
@@ -676,7 +695,7 @@ function updateChartsSync(timeIndex) {
 
       const tempValue = currentPoint.val.toFixed(2);
       const unit = isAnomalyMode ? "°C" : "K";
-      const dateStr = d3.timeFormat("%b %Y")(currentPoint.date);
+      // const dateStr = d3.timeFormat("%b %Y")(currentPoint.date);
 
       //update tamperture
       marker.select(".sync-temp-label")
@@ -686,6 +705,64 @@ function updateChartsSync(timeIndex) {
 }
 
 // --- Helpers ---
+
+// Calculate and render stats (Including Seasonal)
+function updateCountryStats(statsContainer, data) {
+  if (!data || data.length === 0) {
+    statsContainer.style.display = 'none';
+    return;
+  }
+  
+  // Ensure visible
+  statsContainer.style.display = 'flex';
+
+  // 1. General Stats
+  const values = data.map(d => d.val);
+  const min = d3.min(values);
+  const max = d3.max(values);
+  const avg = d3.mean(values);
+  const unit = isAnomalyMode ? "°C" : "K";
+
+  // 2. Seasonal Stats
+  const seasons = {
+    Winter: { sum: 0, count: 0 }, // Dec, Jan, Feb
+    Spring: { sum: 0, count: 0 }, // Mar, Apr, May
+    Summer: { sum: 0, count: 0 }, // Jun, Jul, Aug
+    Autumn: { sum: 0, count: 0 }  // Sep, Oct, Nov
+  };
+
+  data.forEach(d => {
+    const m = d.date.getMonth(); // 0-11
+    // Meteorologic Seasons
+    if (m === 11 || m === 0 || m === 1) {
+        seasons.Winter.sum += d.val;
+        seasons.Winter.count++;
+    } else if (m >= 2 && m <= 4) {
+        seasons.Spring.sum += d.val;
+        seasons.Spring.count++;
+    } else if (m >= 5 && m <= 7) {
+        seasons.Summer.sum += d.val;
+        seasons.Summer.count++;
+    } else {
+        seasons.Autumn.sum += d.val;
+        seasons.Autumn.count++;
+    }
+  });
+
+  const getAvg = (s) => s.count > 0 ? (s.sum / s.count).toFixed(1) : '-';
+
+  // 3. Update DOM Elements directly (No HTML strings!)
+  // Primary
+  statsContainer.querySelector('.val-avg').textContent = `${avg.toFixed(1)}${unit}`;
+  statsContainer.querySelector('.val-max').textContent = `${max.toFixed(1)}${unit}`;
+  statsContainer.querySelector('.val-min').textContent = `${min.toFixed(1)}${unit}`;
+  
+  // Secondary
+  statsContainer.querySelector('.val-spring').textContent = getAvg(seasons.Spring);
+  statsContainer.querySelector('.val-summer').textContent = getAvg(seasons.Summer);
+  statsContainer.querySelector('.val-autumn').textContent = getAvg(seasons.Autumn);
+  statsContainer.querySelector('.val-winter').textContent = getAvg(seasons.Winter);
+}
 
 function removeFromSelectionList(id) {
   const item = document.querySelector(`li[data-country-id="${id}"]`);

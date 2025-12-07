@@ -27,7 +27,6 @@
     <div class="Overview">
       <h2>Overview</h2>
       <p>This project aims to provide an in-depth analysis and visualization of global surface temperature trends from 2015 to 2030 through a highly interactive map. By leveraging authoritative climate model data, we transform complex scientific information into an intuitive, dynamic visual experience, enabling users to effortlessly explore regional variations in global warming.</p>
-      </ol>
     </div>
 
     <div class="slider-box">
@@ -114,7 +113,44 @@
                 </li>
             </ul>
         </section>
-
     </div>
+
+    <!-- 
+      TEMPLATE DEFINITION 
+      这里定义了侧边栏项目的 HTML 结构，JS 将克隆这个模板。
+    -->
+    <template id="sidebar-item-template">
+      <li class="selection-list__item" style="flex-direction: column; align-items: stretch;">
+        
+        <!-- 1. Header -->
+        <div class="item-header" style="display: flex; justify-content: space-between; align-items: center;">
+          <span class="country-name" style="font-weight:600; font-size:0.9rem;"></span>
+          <button class="remove-btn" style="background:none;border:none;cursor:pointer;color:#ef4444;">✕</button>
+        </div>
+
+        <!-- 2. Stats Box (Uses classes defined in style.css) -->
+        <div class="stats-box" style="display: none;">
+          <!-- Primary Stats -->
+          <div class="stats-row primary">
+            <div class="stat-item"><span class="stat-label">Avg</span><span class="stat-value val-avg">--</span></div>
+            <div class="stat-item"><span class="stat-label">Max</span><span class="stat-value val-max">--</span></div>
+            <div class="stat-item"><span class="stat-label">Min</span><span class="stat-value val-min">--</span></div>
+          </div>
+          <!-- Secondary Stats (Seasonal) -->
+          <div class="stats-row secondary">
+            <div class="stat-item"><span class="stat-label">Spring</span><span class="stat-value val-spring">--</span></div>
+            <div class="stat-item"><span class="stat-label">Summer</span><span class="stat-value val-summer">--</span></div>
+            <div class="stat-item"><span class="stat-label">Autumn</span><span class="stat-value val-autumn">--</span></div>
+            <div class="stat-item"><span class="stat-label">Winter</span><span class="stat-value val-winter">--</span></div>
+          </div>
+        </div>
+
+        <!-- 3. Chart Container -->
+        <div class="chart-container" style="height: 100px; width: 100%; margin-top: 5px;">
+          <span class="loading-text" style="font-size:0.7rem;color:#999;">Calculating...</span>
+        </div>
+      </li>
+    </template>
+
   </body>
 </html>

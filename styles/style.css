@@ -538,3 +538,66 @@ input:checked + .slider:before {
 .Technology-and-Data-Sources td strong {
     color: #1e3a8a;
 }
+
+/* --- Sidebar Statistics Styling --- */
+.stats-box {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 8px 0 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 第一行：主要统计 (Avg, Max, Min) */
+.stats-row.primary {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* 第二行：季节统计 */
+.stats-row.secondary {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+/* 单个统计项容器 */
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1; /* 让每个项目均分宽度 */
+}
+
+/* 标签 (AVG, MAX, SPR...) */
+.stat-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+/* 数值 */
+.stat-value {
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1;
+}
+
+/* 主要数值稍微大一点 */
+.primary .stat-value {
+  font-size: 0.8rem;
+}
+
+/* 季节数值稍微小一点 */
+.secondary .stat-value {
+  font-size: 0.8rem;
+}

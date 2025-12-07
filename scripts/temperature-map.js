@@ -188,6 +188,16 @@ function renderHeatmap(timeIndex) {
     }
   }
 
+  // Calculate and display global average temperature
+  const validValues = renderData.map(d => d.val).filter(v => v !== null && !isNaN(v));
+  const globalAvg = d3.mean(validValues);
+  
+  const avgDisplay = document.getElementById('global-avg-temp');
+  if (avgDisplay && globalAvg !== undefined) {
+    const unit = isAnomalyMode ? "°C" : "K";
+    avgDisplay.textContent = `${globalAvg.toFixed(2)} ${unit}`;
+  }
+
   // D3 Update Pattern
   const circles = heatmapSvg.selectAll(".data-point")
     .data(renderData); 
@@ -455,8 +465,16 @@ function updateLegend() {
 function handleMouseEnter(event, feature) {
   const countryId = getCountryId(feature);
   const countryName = getCountryName(feature);
+  window.isOverCountry = true;
   
   let content = `<strong>${countryName}</strong><br/>`;
+  
+  // Add lon/lat info if available
+  const lonLat = window.currentMouseLonLat;
+  if (lonLat) {
+    content += `Lon: ${lonLat.lon}°, Lat: ${lonLat.lat}°<br/>`;
+  }
+  
   content += "Click to reveal trends";
 
   tooltip.style('opacity', 1).html(content);
@@ -468,7 +486,11 @@ function handleMouseEnter(event, feature) {
 
 function handleMouseLeave(event, feature) {
   const countryId = getCountryId(feature);
-  tooltip.style('opacity', 0);
+  window.isOverCountry = false;
+  
+  // Don't hide tooltip completely - let the container mousemove show lon/lat only
+  // tooltip.style('opacity', 0);
+  
   if (!revealedCountries.has(countryId)) {
     d3.select(event.target).classed('country--hover', false);
   }
@@ -800,10 +822,42 @@ function setupTooltip() {
     .style('position', 'absolute')
     .style('opacity', 0);
 
-  overlayLayer.on('mousemove', event => {
+  // Track if mouse is over a country (to avoid duplicate tooltips)
+  window.isOverCountry = false;
+  window.currentMouseLonLat = null;
+
+  // Listen to mousemove on the entire overlay container
+  d3.select('#overlay-container').on('mousemove', function(event) {
+    // Get mouse position in SVG coordinates
+    const [mx, my] = d3.pointer(event);
+    // Account for zoom transform
+    const inverted = currentTransform.invert([mx, my]);
+    // Convert to lon/lat
+    const lonLat = projection.invert(inverted);
+    
+    if (lonLat) {
+      const lon = lonLat[0].toFixed(2);
+      const lat = lonLat[1].toFixed(2);
+      window.currentMouseLonLat = { lon, lat };
+      
+      // If not over a country, show only lon/lat in tooltip
+      if (!window.isOverCountry) {
+        tooltip
+          .style('opacity', 1)
+          .html(`Lon: ${lon}°, Lat: ${lat}°`);
+      }
+    }
+    
     tooltip
       .style('left', `${event.pageX + 12}px`)
       .style('top', `${event.pageY - 8}px`);
+  });
+
+  // Hide tooltip when leaving the map area
+  d3.select('#overlay-container').on('mouseleave', function() {
+    window.currentMouseLonLat = null;
+    window.isOverCountry = false;
+    tooltip.style('opacity', 0);
   });
 }
 

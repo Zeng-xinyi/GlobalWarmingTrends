@@ -218,6 +218,21 @@ input:checked + .slider:before {
   }
 }
 
+/* --- Global Average Temperature Display --- */
+.global-avg-display {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #475569;
+  margin: -10px auto 15px;
+  font-weight: 500;
+}
+
+#global-avg-temp {
+  font-family: 'Consolas', monospace;
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
 /* --- Layout & Map --- */
 .layout {
   flex: 1;
